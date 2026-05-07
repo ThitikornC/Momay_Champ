@@ -1700,14 +1700,16 @@ initializeChart();
           const eventDate = arg.event.start ? arg.event.start.toISOString().slice(0,10) : '';
           const todayStr = new Date().toISOString().slice(0,10);
           const isToday = eventDate === todayStr;
+          const isPast = eventDate < todayStr;
           const titleColor = isToday ? '#fff' : '#2c1810';
           const billColor = isToday ? '#fff' : '#5a2b00';
           const energyColor = isToday ? '#eee' : '#333';
 
           // Title may still be used for the event header; we display bill first then energy
           const titleHtml = arg.event.title ? `<div style="font-size:11px; font-weight:700; color:${titleColor};">${arg.event.title}</div>` : '';
-          const billHtml = bill ? `<div style="font-size:12px; font-weight:800; color:${billColor}; margin-top:4px;">${bill}</div>` : '';
-          const energyHtml = energy ? `<div style="font-size:11px; color:${energyColor};">${energy}</div>` : '';
+          // ซ่อนค่าไฟและหน่วยสำหรับวันก่อนวันนี้
+          const billHtml = (!isPast && bill) ? `<div style="font-size:12px; font-weight:800; color:${billColor}; margin-top:4px;">${bill}</div>` : '';
+          const energyHtml = (!isPast && energy) ? `<div style="font-size:11px; color:${energyColor};">${energy}</div>` : '';
 
           return { html: `${titleHtml}${billHtml}${energyHtml}` };
         } catch (e) {
