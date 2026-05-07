@@ -1696,9 +1696,10 @@ initializeChart();
           const bill = (props.bill !== null && props.bill !== undefined) ? Number(props.bill).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ฿' : '';
           const energy = (props.energy !== null && props.energy !== undefined) ? Number(props.energy).toFixed(2) + ' Unit' : '';
 
-          // ตรวจว่าเป็นวันล่าสุด (วันนี้) หรือไม่ → ใช้สีขาว
-          const eventDate = arg.event.start ? arg.event.start.toISOString().slice(0,10) : '';
-          const todayStr = new Date().toISOString().slice(0,10);
+          // ตรวจว่าเป็นวันนี้หรือไม่ → ใช้ Bangkok timezone เพื่อความแม่นยำ
+          const toBkkDate = d => d.toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
+          const eventDate = arg.event.start ? toBkkDate(arg.event.start) : '';
+          const todayStr = toBkkDate(new Date());
           const isToday = eventDate === todayStr;
           const isPast = eventDate < todayStr;
           const titleColor = isToday ? '#fff' : '#2c1810';
@@ -1722,15 +1723,13 @@ initializeChart();
         const month = fetchInfo.start.getMonth() + 1;
 
         const events = await fetchEvents(year, month);
-        // แสดงข้อมูลตั้งแต่ 20-04-2026 จนถึงวันปัจจุบัน
-        const startLimit = new Date(2026, 3, 20); // April 20, 2026
-        startLimit.setHours(0, 0, 0, 0);
+        // แสดงเฉพาะข้อมูลวันนี้เท่านั้น (ซ่อนข้อมูลวันก่อนหน้า)
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const filtered = events.filter(e => {
           const d = new Date(e.start);
           d.setHours(0, 0, 0, 0);
-          return d >= startLimit && d <= today;
+          return d.getTime() === today.getTime();
         });
         successCallback(filtered);
       },
