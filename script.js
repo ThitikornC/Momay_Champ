@@ -1677,16 +1677,11 @@ initializeChart();
 
     await preloadInitialMonths();
 
-    const todayForRange = new Date();
-    const tomorrowForRange = new Date(todayForRange);
-    tomorrowForRange.setDate(tomorrowForRange.getDate() + 1);
-
     calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: "dayGridMonth",
       locale: "en",
       height: 'auto',
       headerToolbar: { left: "prev", center: "title", right: "next" },
-      validRange: { start: '2026-04-20', end: tomorrowForRange.toISOString().slice(0, 10) },
 
       // Custom content for events: always show bill on top and unit below
       eventOrder: 'extendedProps._order',
