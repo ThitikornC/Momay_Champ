@@ -1677,6 +1677,9 @@ initializeChart();
 
     await preloadInitialMonths();
 
+    // ซ่อนข้อมูลค่าไฟ/หน่วยของวันก่อนวันที่นี้ (24 พ.ค. 2569)
+    const CALENDAR_DATA_CUTOFF = '2026-05-24';
+
     calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: "dayGridMonth",
       locale: "en",
@@ -1696,16 +1699,17 @@ initializeChart();
           const eventDate = arg.event.start ? toBkkDate(arg.event.start) : '';
           const todayStr = toBkkDate(new Date());
           const isToday = eventDate === todayStr;
-          const isPast = eventDate < todayStr;
+          // ซ่อนค่าไฟ/หน่วยสำหรับวันก่อนวันที่ 24 พ.ค. 2569
+          const isHidden = eventDate < CALENDAR_DATA_CUTOFF;
           const titleColor = isToday ? '#fff' : '#2c1810';
           const billColor = isToday ? '#fff' : '#5a2b00';
           const energyColor = isToday ? '#eee' : '#333';
 
           // Title may still be used for the event header; we display bill first then energy
           const titleHtml = arg.event.title ? `<div style="font-size:11px; font-weight:700; color:${titleColor};">${arg.event.title}</div>` : '';
-          // ซ่อนค่าไฟและหน่วยสำหรับวันก่อนวันนี้
-          const billHtml = (!isPast && bill) ? `<div style="font-size:12px; font-weight:800; color:${billColor}; margin-top:4px;">${bill}</div>` : '';
-          const energyHtml = (!isPast && energy) ? `<div style="font-size:11px; color:${energyColor};">${energy}</div>` : '';
+          // ซ่อนค่าไฟและหน่วยสำหรับวันก่อนวันที่กำหนด
+          const billHtml = (!isHidden && bill) ? `<div style="font-size:12px; font-weight:800; color:${billColor}; margin-top:4px;">${bill}</div>` : '';
+          const energyHtml = (!isHidden && energy) ? `<div style="font-size:11px; color:${energyColor};">${energy}</div>` : '';
 
           return { html: `${titleHtml}${billHtml}${energyHtml}` };
         } catch (e) {
@@ -1718,13 +1722,11 @@ initializeChart();
         const month = fetchInfo.start.getMonth() + 1;
 
         const events = await fetchEvents(year, month);
-        // แสดงเฉพาะข้อมูลวันนี้เท่านั้น (ซ่อนข้อมูลวันก่อนหน้า)
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        // แสดงเฉพาะข้อมูลตั้งแต่วันที่ 24 พ.ค. 2569 เป็นต้นไป (ซ่อนข้อมูลก่อนหน้า)
+        const toBkkDate = d => d.toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
         const filtered = events.filter(e => {
-          const d = new Date(e.start);
-          d.setHours(0, 0, 0, 0);
-          return d.getTime() === today.getTime();
+          const d = e.start ? toBkkDate(new Date(e.start)) : '';
+          return d >= CALENDAR_DATA_CUTOFF;
         });
         successCallback(filtered);
       },
