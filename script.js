@@ -2558,8 +2558,9 @@ function renderNotifications() {
     try { parsed = JSON.parse(n.body || '{}'); } catch(e) { parsed = {}; }
 
     // If body contains a power value -> show Peak style
-    if (parsed.power !== undefined) {
-      const val = Number(parsed.power) || 0;
+    const powerVal = parsed.power !== undefined ? parsed.power : n.power;
+    if (powerVal !== undefined && powerVal !== null) {
+      const val = Number(powerVal) || 0;
       return `
         <div style="margin-top:8px;">
           <div style="font-size:12px; color:#666; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.6px;">Current peak power is ${val.toFixed(2)} kW</div>
